@@ -1,10 +1,34 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 function App() {
   const [length, setLength] = useState(8);
   const [numAllowed, setNumAllowed] = useState(false);
   const [symAllowed, setSymAllowed] = useState(false);
   const [password, setPassword] = useState("");
+
+  const passwordRef = useRef();
+
+  const generatePassword = useCallback(() => {
+    let pass = "";
+    let str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    if (numAllowed) str += "0123456789";
+    if (symAllowed) str += "!@#$%^&*()_+";
+
+    for (let i = 0; i < length; i++) {
+      const char = Math.floor(Math.random() * str.length);
+      pass += str.charAt(char);
+    }
+
+    setPassword(pass);
+  }, [length, numAllowed, symAllowed]);
+
+  const copyPassword = () => {
+    window.navigator.clipboard.writeText(password);
+    passwordRef.current.select();
+  };
+
+  useEffect(() => generatePassword(), [length, numAllowed, symAllowed]);
 
   return (
     <div className="w-full max-w-md mx-auto shadow-md rounded-lg px-4 py-3 my-8 bg-pink-200 text-pink-700">
@@ -18,8 +42,12 @@ function App() {
           className="outline-none w-full py-1 px-3"
           placeholder="Password"
           readOnly
+          ref={passwordRef}
         />
-        <button className="outline-none bg-pink-400 text-white px-3 py-0.5 shrink-0">
+        <button
+          onClick={copyPassword}
+          className="outline-none bg-pink-400 text-white px-3 py-0.5 shrink-0"
+        >
           Copy
         </button>
       </div>
